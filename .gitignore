@@ -15,5 +15,3 @@ my-dropify-frontend/.env.local
 .DS_Store
 Thumbs.db
 
-# root folder
-PLAN.md
