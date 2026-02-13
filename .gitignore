@@ -1,5 +1,16 @@
-.venv/
-venv/
-__pycache__/
-.pytest_cache/
-test.db
+# Backend
+my-dropify-backend/venv/
+my-dropify-backend/__pycache__/
+my-dropify-backend/*.pyc
+my-dropify-backend/test.db
+my-dropify-backend/uploads/
+my-dropify-backend/.env
+
+# Frontend
+my-dropify-frontend/node_modules/
+my-dropify-frontend/.next/
+my-dropify-frontend/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
