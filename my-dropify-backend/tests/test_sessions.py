@@ -27,12 +27,20 @@ def test_session_expiry():
     create_response = client.post("/sessions")
     code = create_response.json()["code"]
 
-    # manually expire redis key
-    from app.db.redis import redis_client
-    redis_client.delete(f"session:{code}")
+    # manually expire session in DB (source of truth)
+    from app.db.database import SessionLocal
+    from app.models.session import Session as SessionModel
+    from datetime import datetime, timedelta
+
+    db = SessionLocal()
+    session = db.query(SessionModel).filter(SessionModel.code == code).first()
+    session.expires_at = datetime.utcnow() - timedelta(seconds=1)
+    db.commit()
+    db.close()
 
     response = client.get(f"/sessions/{code}")
     assert response.status_code == 404
+
 
 def test_join_valid_session():
     create_response = client.post("/sessions")

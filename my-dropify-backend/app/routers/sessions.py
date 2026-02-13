@@ -8,6 +8,7 @@ from app.services.drop_service import create_text_drop
 from app.services.file_service import save_file
 from app.services.qrcode_service import generate_session_qrcode
 from app.websocket.manager import manager
+from app.core.dependencies import rate_limit_dependency
 
 
 router = APIRouter()
@@ -28,7 +29,8 @@ def _require_session(db: Session, code: str):
     return session
 
 
-@router.post("/sessions")
+
+@router.post("/sessions", dependencies=[Depends(rate_limit_dependency)])
 def create(db: Session = Depends(get_db)):
     session = create_session(db)
     return {"code": session.code}
@@ -70,7 +72,7 @@ async def create_drop(
     return {"content": drop.content}
 
 
-@router.post("/sessions/{code}/drops/file")
+@router.post("/sessions/{code}/drops/file", dependencies=[Depends(rate_limit_dependency)])
 async def create_file_drop(
     code: str,
     file: UploadFile = File(...),

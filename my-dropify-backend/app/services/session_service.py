@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.session import Session as SessionModel
 from app.db.redis import redis_client
@@ -40,7 +40,8 @@ def _set_redis_ttl(code: str) -> None:
 def create_session(db: Session) -> SessionModel:
     code = _generate_unique_code(db)
 
-    expires_at = datetime.now(UTC) + timedelta(seconds=SESSION_TTL_SECONDS)
+    expires_at = datetime.utcnow() + timedelta(seconds=SESSION_TTL_SECONDS)
+
 
     session = SessionModel(
         code=code,
@@ -57,13 +58,25 @@ def create_session(db: Session) -> SessionModel:
 
 
 def get_session_by_code(db: Session, code: str) -> SessionModel | None:
-    # Check Redis first (session must be active)
-    if not redis_client.exists(f"session:{code}"):
-        return None
-
-    return (
+    session = (
         db.query(SessionModel)
         .filter(SessionModel.code == code)
         .first()
     )
+
+    if not session:
+        return None
+
+    db.refresh(session)
+
+    if session.expires_at <= datetime.utcnow():
+        db.delete(session)
+        db.commit()
+        redis_client.delete(f"session:{code}")
+        return None
+
+    return session
+
+
+
 

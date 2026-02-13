@@ -1,11 +1,10 @@
-import redis
+import redis.asyncio as redis
 from app.core.config import REDIS_URL
 
-redis_client = redis.Redis.from_url(
+redis_client = redis.from_url(
     REDIS_URL,
     decode_responses=True
 )
 
-
-def ping():
-    return redis_client.ping()
+async def ping():
+    return await redis_client.ping()

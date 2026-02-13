@@ -1,20 +1,9 @@
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.models.base import Base
+from app.main import app
+from app.core.dependencies import rate_limit_dependency
 
-TEST_DATABASE_URL = "sqlite:///./test_test.db"
-
-engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(bind=engine)
-
-
-@pytest.fixture(scope="function")
-def db_session():
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(bind=engine)
+@pytest.fixture(autouse=True)
+def disable_rate_limit():
+    app.dependency_overrides[rate_limit_dependency] = lambda: None
+    yield
+    app.dependency_overrides.clear()
