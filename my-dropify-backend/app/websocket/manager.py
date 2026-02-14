@@ -8,16 +8,29 @@ class ConnectionManager:
 
     async def connect(self, session_code: str, websocket: WebSocket):
         await websocket.accept()
-        if session_code not in self.active_connections:
-            self.active_connections[session_code] = []
-        self.active_connections[session_code].append(websocket)
+        self.active_connections.setdefault(session_code, []).append(websocket)
 
     def disconnect(self, session_code: str, websocket: WebSocket):
-        self.active_connections[session_code].remove(websocket)
-
-    async def broadcast(self, session_code: str, message: str):
         if session_code in self.active_connections:
-            for connection in self.active_connections[session_code]:
+            if websocket in self.active_connections[session_code]:
+                self.active_connections[session_code].remove(websocket)
+
+            # Clean up empty session lists
+            if not self.active_connections[session_code]:
+                del self.active_connections[session_code]
+
+    async def broadcast(self, code: str, message: str):
+        if code not in self.active_connections:
+            return
+
+        # Copy list to avoid mutation issues
+        connections = list(self.active_connections[code])
+
+        for connection in connections:
+            try:
                 await connection.send_text(message)
+            except Exception:
+                self.disconnect(code, connection)
+
 
 manager = ConnectionManager()

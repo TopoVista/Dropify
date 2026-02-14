@@ -12,7 +12,6 @@ def create_text_drop(
     if not content or not content.strip():
         raise ValueError("Content cannot be empty")
 
-    # Faster existence check (no full object load)
     exists = (
         db.query(SessionModel.id)
         .filter(SessionModel.code == session_code)
@@ -34,3 +33,12 @@ def create_text_drop(
     db.refresh(drop)
 
     return drop
+
+
+def get_drops_by_session(db: Session, session_code: str):
+    return (
+        db.query(Drop)
+        .filter(Drop.session_code == session_code)
+        .order_by(Drop.id.asc())
+        .all()
+    )
