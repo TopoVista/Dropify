@@ -4,6 +4,7 @@ from io import BytesIO
 from app.services.file_service import save_file
 from app.services.session_service import create_session
 from app.db.database import SessionLocal
+from starlette.datastructures import Headers
 
 
 @pytest.mark.asyncio
@@ -14,10 +15,13 @@ async def test_save_file_success(tmp_path):
     session = create_session(db)
 
     file_content = b"hello"
+
     file = UploadFile(
         filename="test.txt",
-        file=BytesIO(file_content)
+        file=BytesIO(file_content),
+        headers=Headers({"content-type": "text/plain"})
     )
+
 
     drop = await save_file(db, session.code, file)
 
@@ -51,10 +55,13 @@ async def test_empty_file(tmp_path):
     session = create_session(db)
 
     file_content = b""
+
     file = UploadFile(
         filename="test.txt",
-        file=BytesIO(file_content)
+        file=BytesIO(file_content),
+        headers=Headers({"content-type": "text/plain"})
     )
+
 
     with pytest.raises(ValueError):
         await save_file(db, session.code, file)

@@ -35,7 +35,7 @@ def _require_session(db: Session, code: str):
 # -------------------------
 
 @router.post("/sessions", dependencies=[Depends(rate_limit_dependency)])
-def create(db: Session = Depends(get_db)):
+async def create(db: Session = Depends(get_db)):
     session = create_session(db)
     return {"code": session.code}
 

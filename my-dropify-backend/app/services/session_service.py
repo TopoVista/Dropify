@@ -1,10 +1,7 @@
 import random
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-
 from app.models.session import Session as SessionModel
-from app.db.redis import redis_client
-
 
 SESSION_TTL_SECONDS = 3600
 MAX_CODE_GENERATION_ATTEMPTS = 20
@@ -19,7 +16,7 @@ def _generate_unique_code(db: Session) -> str:
         code = generate_code()
 
         exists = (
-            db.query(SessionModel.id)
+            db.query(SessionModel)
             .filter(SessionModel.code == code)
             .first()
         )
@@ -28,15 +25,6 @@ def _generate_unique_code(db: Session) -> str:
             return code
 
     raise RuntimeError("Unable to generate unique session code")
-
-
-def _set_redis_ttl(code: str) -> None:
-    # Redis is only used for TTL optimization
-    redis_client.setex(
-        f"session:{code}",
-        SESSION_TTL_SECONDS,
-        "active"
-    )
 
 
 def create_session(db: Session) -> SessionModel:
@@ -53,9 +41,6 @@ def create_session(db: Session) -> SessionModel:
     db.commit()
     db.refresh(session)
 
-    # Optional optimization
-    _set_redis_ttl(code)
-
     return session
 
 
@@ -69,7 +54,6 @@ def get_session_by_code(db: Session, code: str) -> SessionModel | None:
     if not session:
         return None
 
-    # DB is source of truth for expiration
     if session.expires_at < datetime.utcnow():
         return None
 

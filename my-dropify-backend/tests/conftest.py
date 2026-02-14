@@ -1,9 +1,16 @@
+import os
+os.environ["TESTING"] = "true"
+
 import pytest
 from app.main import app
-from app.core.dependencies import rate_limit_dependency
+from fastapi.testclient import TestClient
+from app.core.dependencies import limiter
 
 @pytest.fixture(autouse=True)
-def disable_rate_limit():
-    app.dependency_overrides[rate_limit_dependency] = lambda: None
-    yield
-    app.dependency_overrides.clear()
+def reset_rate_limiter():
+    limiter.memory_store = {}
+
+@pytest.fixture
+def client():
+    with TestClient(app) as c:
+        yield c
