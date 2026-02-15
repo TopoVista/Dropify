@@ -46,16 +46,22 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+from app.core.config import FRONTEND_URL
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        FRONTEND_URL,
         "http://localhost:3001",
-        "https://dropify-frontend-2ngdo9rx9-topovistas-projects.vercel.app"
+        "https://dropify-frontend-psi.vercel.app",
+        "https://dropify-frontend-git-main-topovistas-projects.vercel.app",
+        "https://dropify-frontend-o7vp4m3zo-topovistas-projects.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 os.makedirs("uploads", exist_ok=True)
 
