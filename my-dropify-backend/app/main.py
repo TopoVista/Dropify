@@ -50,7 +50,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3001",
-        "https://your-vercel-app.vercel.app"
+        "https://dropify-frontend-2ngdo9rx9-topovistas-projects.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
