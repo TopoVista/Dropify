@@ -12,7 +12,7 @@ export default function FileDropInput({ sessionCode }: Props) {
     const formData = new FormData()
     formData.append('file', file)
 
-    await fetch(`http://localhost:8000/sessions/${sessionCode}/drops/file`, {
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sessions/${sessionCode}/drops/file`, {
       method: 'POST',
       body: formData
     })

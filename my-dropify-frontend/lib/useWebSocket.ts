@@ -6,35 +6,42 @@ export function useWebSocket(code: string, onMessage: (msg: string) => void) {
   useEffect(() => {
     if (!code) return
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+    if (!backendUrl) {
+      console.error('NEXT_PUBLIC_BACKEND_URL is not defined')
+      return
+    }
 
     const wsUrl = backendUrl
       .replace('https://', 'wss://')
       .replace('http://', 'ws://')
 
-    const ws = new WebSocket(`${wsUrl}/ws/${code}`)
+    const socket = new WebSocket(`${wsUrl}/ws/${code}`)
+    wsRef.current = socket
 
-    wsRef.current = ws
+    socket.onopen = () => {
+      console.log('WebSocket connected')
+    }
 
-    ws.onmessage = (event) => {
+    socket.onmessage = (event) => {
       onMessage(event.data)
     }
 
-    ws.onerror = () => {
-      console.error('WebSocket error')
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error)
     }
 
-    ws.onclose = () => {
+    socket.onclose = () => {
       console.log('WebSocket closed')
     }
 
     return () => {
-      ws.close()
+      socket.close()
     }
-  }, [code])
+  }, [code, onMessage])
 
   const send = (message: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(message)
     }
   }
