@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { useEffect, useRef, useState } from 'react'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github-dark.css'
 
 type Props = {
   code: string
@@ -11,6 +11,13 @@ type Props = {
 
 export default function CodeBlock({ code, language }: Props) {
   const [copied, setCopied] = useState(false)
+  const codeRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (codeRef.current) {
+      hljs.highlightElement(codeRef.current)
+    }
+  }, [code, language])
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code)
@@ -26,30 +33,36 @@ export default function CodeBlock({ code, language }: Props) {
           position: 'absolute',
           right: 10,
           top: 10,
-          background: '#1f1f1f',
-          color: '#fff',
-          border: '1px solid #444',
-          padding: '4px 8px',
+          background: '#1f2937',
+          color: '#7aa2f7',
+          border: '1px solid #2d333b',
+          padding: '4px 10px',
+          borderRadius: 6,
           cursor: 'pointer',
           fontSize: 12,
+          transition: 'all 0.2s ease',
         }}
       >
         {copied ? 'Copied' : 'Copy'}
       </button>
 
-      <SyntaxHighlighter
-        language={language}
-        style={vscDarkPlus}
-        showLineNumbers
-        wrapLongLines
-        customStyle={{
-          borderRadius: 8,
+      <pre
+        style={{
+          borderRadius: 12,
           fontSize: 14,
-          paddingTop: 40,
+          padding: '40px 16px 16px 16px',
+          overflowX: 'auto',
+          background: '#0d1117',
+          border: '1px solid #2d333b',
         }}
       >
-        {code}
-      </SyntaxHighlighter>
+        <code
+          ref={codeRef}
+          className={`language-${language}`}
+        >
+          {code}
+        </code>
+      </pre>
     </div>
   )
 }
