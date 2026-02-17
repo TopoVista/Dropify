@@ -25,9 +25,11 @@ export default function RootLayout({
           background: '#0f1117',
           color: '#e6edf3',
           fontFamily: 'Inter, system-ui, sans-serif',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {/* Glass Neon Header */}
         <header
           style={{
             position: 'sticky',
@@ -44,7 +46,6 @@ export default function RootLayout({
               margin: 0,
               fontSize: '20px',
               fontWeight: 600,
-              letterSpacing: '0.5px',
               color: '#7aa2f7',
               textShadow: '0 0 15px rgba(122,162,247,0.5)',
             }}
@@ -53,16 +54,10 @@ export default function RootLayout({
           </h1>
         </header>
 
-        {/* Main Content */}
-        <main
-          style={{
-            minHeight: 'calc(100vh - 120px)',
-          }}
-        >
+        <main style={{ flex: 1 }}>
           {children}
         </main>
 
-        {/* Minimal Neon Footer */}
         <footer
           style={{
             textAlign: 'center',
@@ -76,19 +71,6 @@ export default function RootLayout({
         >
           © {new Date().getFullYear()} Dropify
         </footer>
-
-        {/* Service Worker */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function () {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
       </body>
     </html>
   )

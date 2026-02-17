@@ -5,25 +5,33 @@ export function useWebSocket(
   onMessage: (msg: any) => void,
 ) {
   const wsRef = useRef<WebSocket | null>(null)
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const messageHandlerRef = useRef(onMessage)
+  const hasConnectedRef = useRef(false)
+
+  // Always keep latest onMessage without re-triggering socket
+  messageHandlerRef.current = onMessage
 
   useEffect(() => {
     if (!code) return
 
+    // Prevent duplicate socket creation
+    if (hasConnectedRef.current) return
+    hasConnectedRef.current = true
+
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-    if (!backendUrl) {
-      console.error('NEXT_PUBLIC_BACKEND_URL is not defined')
-      return
-    }
+    if (!backendUrl) return
 
     const wsUrl = backendUrl
       .replace('https://', 'wss://')
       .replace('http://', 'ws://')
 
-    let socket: WebSocket | null = null
-    let reconnectTimeout: NodeJS.Timeout | null = null
+    let isUnmounted = false
 
     const connect = () => {
-      socket = new WebSocket(`${wsUrl}/ws/${code}`)
+      if (isUnmounted) return
+
+      const socket = new WebSocket(`${wsUrl}/ws/${code}`)
       wsRef.current = socket
 
       socket.onopen = () => {
@@ -33,37 +41,43 @@ export function useWebSocket(
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
-          onMessage(data)
+          messageHandlerRef.current(data)
         } catch (err) {
-          console.error('WebSocket message parse error:', err)
+          console.error('WebSocket parse error:', err)
         }
       }
 
-      socket.onerror = (error) => {
-        console.error('WebSocket error:', error)
+      socket.onerror = () => {
+        console.log('WebSocket error')
       }
 
       socket.onclose = () => {
         console.log('WebSocket closed')
 
-        // 🔥 auto reconnect after 2s
-        reconnectTimeout = setTimeout(() => {
-          console.log('Reconnecting WebSocket...')
-          connect()
-        }, 2000)
+        if (!isUnmounted) {
+          reconnectTimeoutRef.current = setTimeout(connect, 2000)
+        }
       }
     }
 
     connect()
 
     return () => {
-      if (reconnectTimeout) clearTimeout(reconnectTimeout)
-      if (socket) socket.close()
+      isUnmounted = true
+      hasConnectedRef.current = false
+
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
+      }
+
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
     }
-  }, [code, onMessage])
+  }, [code]) // ✅ ONLY depends on code
 
   const send = (message: any) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message))
     }
   }
