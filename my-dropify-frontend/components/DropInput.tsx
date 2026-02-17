@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Button from '@/components/Button'
 
 type Props = {
   onSend: (text: string, type: 'text' | 'code') => void
@@ -16,79 +17,80 @@ export default function DropInput({ onSend }: Props) {
     setValue('')
   }
 
-  return (
-    <div style={{ marginTop: 20 }}>
-      {/* Mode Toggle */}
-      <div style={{ marginBottom: 8 }}>
-        <button
-          onClick={() => setMode('text')}
-          style={{
-            marginRight: 8,
-            padding: '6px 12px',
-            borderRadius: 6,
-            border: '1px solid #ccc',
-            background: mode === 'text' ? '#222' : '#eee',
-            color: mode === 'text' ? '#fff' : '#000',
-            cursor: 'pointer',
-          }}
-        >
-          Text
-        </button>
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
 
-        <button
-          onClick={() => setMode('code')}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 6,
-            border: '1px solid #ccc',
-            background: mode === 'code' ? '#222' : '#eee',
-            color: mode === 'code' ? '#fff' : '#000',
-            cursor: 'pointer',
-          }}
-        >
-          Code
-        </button>
+  return (
+    <div className="mt-6 space-y-4">
+
+      {/* Mode Toggle */}
+      <div className="flex gap-2">
+        {['text', 'code'].map((type) => (
+          <button
+            key={type}
+            onClick={() => setMode(type as 'text' | 'code')}
+            className={`
+              px-4 py-1.5
+              rounded-lg
+              text-sm font-medium
+              transition-all duration-300
+              border
+              ${
+                mode === type
+                  ? 'bg-[#1f2937] text-white border-[#7aa2f7] shadow-[0_0_20px_rgba(122,162,247,0.4)]'
+                  : 'bg-[#0f1117] text-gray-400 border-[#2d333b] hover:border-[#7aa2f7]'
+              }
+            `}
+          >
+            {type === 'text' ? 'Text' : 'Code'}
+          </button>
+        ))}
       </div>
 
-      {/* Input */}
+      {/* Textarea */}
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        rows={mode === 'code' ? 14 : 3}
-        style={{
-          width: '100%',
-          padding: 12,
-          borderRadius: 8,
-          border: '1px solid #ccc',
-          resize: 'vertical',
-          fontFamily: mode === 'code' ? 'monospace' : 'inherit',
-          fontSize: 14,
-          background: mode === 'code' ? '#1e1e1e' : '#fff',
-          color: mode === 'code' ? '#d4d4d4' : '#000',
-          whiteSpace: 'pre',
-        }}
+        onKeyDown={handleKeyDown}
+        rows={mode === 'code' ? 12 : 3}
         placeholder={
           mode === 'code'
             ? 'Paste your code here...'
             : 'Type your message...'
         }
+        className={`
+          w-full
+          px-4 py-3
+          rounded-xl
+          resize-y
+          border border-[#2d333b]
+          bg-[#0f1117]
+          text-white
+          placeholder:text-gray-500
+          focus:outline-none
+          focus:ring-2
+          focus:ring-[#7aa2f7]
+          transition-all duration-300
+          ${
+            mode === 'code'
+              ? 'font-mono text-sm'
+              : 'text-sm'
+          }
+        `}
       />
 
       {/* Send Button */}
-      <button
-        onClick={handleSend}
-        style={{
-          marginTop: 10,
-          padding: '8px 16px',
-          borderRadius: 6,
-          border: 'none',
-          background: '#0070f3',
-          color: '#fff',
-          cursor: 'pointer',
-        }}
-      >
-        Send
-      </button>
+      <div className="flex justify-end">
+        <Button
+          label="Send"
+          onClick={handleSend}
+          disabled={!value.trim()}
+        />
+      </div>
     </div>
   )
 }
