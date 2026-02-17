@@ -31,7 +31,8 @@ export default function SessionPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
-  const frameIdRef = useRef<number>()
+  const frameIdRef = useRef<number | null>(null)
+
 
   /* ---------------------------
      THREE.JS BACKGROUND
