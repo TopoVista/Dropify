@@ -27,12 +27,11 @@ export default function SessionPage() {
   const [copied, setCopied] = useState(false)
   const [isOffline, setIsOffline] = useState(false)
   const [, forceTick] = useState(0)
-  
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
   const frameIdRef = useRef<number | null>(null)
-
 
   /* ---------------------------
      THREE.JS BACKGROUND
@@ -43,15 +42,20 @@ export default function SessionPage() {
     // Scene setup
     const scene = new THREE.Scene()
     sceneRef.current = scene
-    
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000,
+    )
     camera.position.z = 50
 
-    const renderer = new THREE.WebGLRenderer({ 
-      canvas: canvasRef.current, 
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvasRef.current,
       alpha: true,
       antialias: false, // Disable for performance
-      powerPreference: 'low-power' // Optimize for battery/performance
+      powerPreference: 'low-power', // Optimize for battery/performance
     })
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)) // Cap pixel ratio for performance
@@ -67,7 +71,7 @@ export default function SessionPage() {
       positions[i] = (Math.random() - 0.5) * 100
       positions[i + 1] = (Math.random() - 0.5) * 100
       positions[i + 2] = (Math.random() - 0.5) * 100
-      
+
       velocities[i] = (Math.random() - 0.5) * 0.02
       velocities[i + 1] = (Math.random() - 0.5) * 0.02
       velocities[i + 2] = (Math.random() - 0.5) * 0.02
@@ -81,7 +85,7 @@ export default function SessionPage() {
       transparent: true,
       opacity: 0.6,
       blending: THREE.AdditiveBlending,
-      sizeAttenuation: true
+      sizeAttenuation: true,
     })
 
     const particles = new THREE.Points(geometry, material)
@@ -114,7 +118,7 @@ export default function SessionPage() {
 
         geometry.attributes.position.needsUpdate = true
         particles.rotation.y += 0.0005
-        
+
         renderer.render(scene, camera)
       }
     }
@@ -262,6 +266,7 @@ export default function SessionPage() {
   }
 
   const handleCopy = async () => {
+    if (!code) return
     await navigator.clipboard.writeText(code)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
@@ -304,7 +309,14 @@ export default function SessionPage() {
         }}
       />
 
-      <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div
+        style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
         {/* Header */}
         <div
           style={{
@@ -316,9 +328,9 @@ export default function SessionPage() {
           }}
         >
           <div>
-            <h1 
-              style={{ 
-                fontSize: '28px', 
+            <h1
+              style={{
+                fontSize: '28px',
                 fontWeight: 600,
                 textShadow: '0 0 20px rgba(122, 162, 247, 0.5)',
               }}
@@ -347,15 +359,20 @@ export default function SessionPage() {
               borderRadius: 8,
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              boxShadow: copied ? '0 0 20px rgba(34, 197, 94, 0.4)' : '0 0 10px rgba(122, 162, 247, 0.2)',
+              boxShadow: copied
+                ? '0 0 20px rgba(34, 197, 94, 0.4)'
+                : '0 0 10px rgba(122, 162, 247, 0.2)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(122, 162, 247, 0.4)'
+              e.currentTarget.style.boxShadow =
+                '0 0 20px rgba(122, 162, 247, 0.4)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = copied ? '0 0 20px rgba(34, 197, 94, 0.4)' : '0 0 10px rgba(122, 162, 247, 0.2)'
+              e.currentTarget.style.boxShadow = copied
+                ? '0 0 20px rgba(34, 197, 94, 0.4)'
+                : '0 0 10px rgba(122, 162, 247, 0.2)'
             }}
           >
             {copied ? 'Copied' : 'Copy'}
@@ -451,11 +468,13 @@ export default function SessionPage() {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)'
-                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(122, 162, 247, 0.3)'
+                  e.currentTarget.style.boxShadow =
+                    '0 8px 30px rgba(122, 162, 247, 0.3)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)'
+                  e.currentTarget.style.boxShadow =
+                    '0 4px 20px rgba(0, 0, 0, 0.3)'
                 }}
               >
                 {d.type === 'file' && d.path && (
@@ -482,9 +501,7 @@ export default function SessionPage() {
 
                 {d.type === 'code' && (
                   <pre style={{ borderRadius: 8, overflow: 'auto', margin: 0 }}>
-                    <code className="language-javascript">
-                      {d.content}
-                    </code>
+                    <code className="language-javascript">{d.content}</code>
                   </pre>
                 )}
 

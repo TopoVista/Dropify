@@ -13,35 +13,26 @@ export default function CodeBlock({ code, language }: Props) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
+    if (!code) return
     await navigator.clipboard.writeText(code)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        marginBottom: 20,
-        borderRadius: 16,
-        overflow: 'hidden',
-        boxShadow: '0 0 30px rgba(122,162,247,0.15)',
-      }}
-    >
+    <div style={{ position: 'relative', marginBottom: 16 }}>
       <button
         onClick={handleCopy}
         style={{
           position: 'absolute',
-          right: 14,
-          top: 14,
-          padding: '6px 12px',
-          borderRadius: 20,
-          border: '1px solid #2d333b',
-          background: copied ? '#22c55e' : '#1f2937',
+          right: 10,
+          top: 10,
+          background: '#1f1f1f',
           color: '#fff',
+          border: '1px solid #444',
+          padding: '4px 8px',
           cursor: 'pointer',
           fontSize: 12,
-          transition: 'all 0.2s ease',
         }}
       >
         {copied ? 'Copied' : 'Copy'}
@@ -53,10 +44,9 @@ export default function CodeBlock({ code, language }: Props) {
         showLineNumbers
         wrapLongLines
         customStyle={{
-          margin: 0,
-          paddingTop: 50,
-          borderRadius: 16,
-          background: '#0f1117',
+          borderRadius: 8,
+          fontSize: 14,
+          paddingTop: 40,
         }}
       >
         {code}
