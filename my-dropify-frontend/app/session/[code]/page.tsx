@@ -431,7 +431,7 @@ export default function SessionPage() {
         </div>
         <div style={{ height: 20 }} />
         <div style={{ animation: 'fadeIn 1.2s ease-out' }}>
-          <FileDropInput sessionCode={code} />
+          {code && <FileDropInput sessionCode={code} />}
         </div>
 
         <div style={{ marginTop: 50 }}>
