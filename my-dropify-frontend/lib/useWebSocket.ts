@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react'
 
-export function useWebSocket(code: string, onMessage: (msg: string) => void) {
+export function useWebSocket(
+  code: string | undefined,
+  onMessage: (msg: any) => void,
+) {
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
@@ -16,33 +19,52 @@ export function useWebSocket(code: string, onMessage: (msg: string) => void) {
       .replace('https://', 'wss://')
       .replace('http://', 'ws://')
 
-    const socket = new WebSocket(`${wsUrl}/ws/${code}`)
-    wsRef.current = socket
+    let socket: WebSocket | null = null
+    let reconnectTimeout: NodeJS.Timeout | null = null
 
-    socket.onopen = () => {
-      console.log('WebSocket connected')
+    const connect = () => {
+      socket = new WebSocket(`${wsUrl}/ws/${code}`)
+      wsRef.current = socket
+
+      socket.onopen = () => {
+        console.log('WebSocket connected')
+      }
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          onMessage(data)
+        } catch (err) {
+          console.error('WebSocket message parse error:', err)
+        }
+      }
+
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error)
+      }
+
+      socket.onclose = () => {
+        console.log('WebSocket closed')
+
+        // 🔥 auto reconnect after 2s
+        reconnectTimeout = setTimeout(() => {
+          console.log('Reconnecting WebSocket...')
+          connect()
+        }, 2000)
+      }
     }
 
-    socket.onmessage = (event) => {
-      onMessage(event.data)
-    }
-
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
-
-    socket.onclose = () => {
-      console.log('WebSocket closed')
-    }
+    connect()
 
     return () => {
-      socket.close()
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      if (socket) socket.close()
     }
   }, [code, onMessage])
 
-  const send = (message: string) => {
+  const send = (message: any) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(message)
+      wsRef.current.send(JSON.stringify(message))
     }
   }
 

@@ -9,6 +9,7 @@ from app.db.database import init_db, SessionLocal
 from app.routers import health, sessions
 from app.websocket.manager import manager
 from app.services.expiry_service import cleanup_expired_sessions
+from app.services.drop_cleanup_service import cleanup_expired_drops
 
 
 @asynccontextmanager
@@ -24,13 +25,29 @@ async def lifespan(app: FastAPI):
             while True:
                 db = SessionLocal()
                 try:
-                    deleted = cleanup_expired_sessions(db)
-                    if deleted:
-                        print(f"Cleaned {deleted} expired sessions")
+                    # Clean sessions
+                    deleted_sessions = cleanup_expired_sessions(db)
+
+                    # Clean drops (returns list of expired drop IDs)
+                    expired_drop_ids = cleanup_expired_drops(db)
+
+                    if deleted_sessions:
+                        print(f"Cleaned {deleted_sessions} expired sessions")
+
+                    # 🔥 Broadcast drop deletions
+                    for drop in expired_drop_ids:
+                        await manager.broadcast(
+                            drop["session_code"],
+                            {
+                                "event": "DELETE_DROP",
+                                "id": drop["id"],
+                            },
+                        )
+
                 finally:
                     db.close()
 
-                await asyncio.sleep(60)
+                await asyncio.sleep(5)  # every 5 seconds
 
         task = asyncio.create_task(expiry_loop())
 
@@ -62,9 +79,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 os.makedirs("uploads", exist_ok=True)
-
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 

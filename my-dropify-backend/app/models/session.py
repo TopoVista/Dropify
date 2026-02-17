@@ -10,4 +10,9 @@ class Session(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     code = Column(String(6), unique=True, nullable=False)
-    expires_at = Column(DateTime, nullable=False, default=lambda: datetime.utcnow() + timedelta(hours=1))
+
+    expires_at = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.utcnow() + timedelta(hours=1)
+    )

@@ -1,5 +1,6 @@
 from fastapi import WebSocket
 from typing import Dict, List
+import json
 
 
 class ConnectionManager:
@@ -15,20 +16,18 @@ class ConnectionManager:
             if websocket in self.active_connections[session_code]:
                 self.active_connections[session_code].remove(websocket)
 
-            # Clean up empty session lists
             if not self.active_connections[session_code]:
                 del self.active_connections[session_code]
 
-    async def broadcast(self, code: str, message: str):
+    async def broadcast(self, code: str, message: dict):
         if code not in self.active_connections:
             return
 
-        # Copy list to avoid mutation issues
         connections = list(self.active_connections[code])
 
         for connection in connections:
             try:
-                await connection.send_text(message)
+                await connection.send_json(message)   # 🔥 FIX
             except Exception:
                 self.disconnect(code, connection)
 

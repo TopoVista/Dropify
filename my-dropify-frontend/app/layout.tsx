@@ -1,11 +1,15 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import React from 'react'
+import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Dropify',
   description: 'Realtime file and text sharing',
   manifest: '/manifest.webmanifest',
-  themeColor: '#0f172a',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0f1117',
 }
 
 export default function RootLayout({
@@ -15,18 +19,65 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head />
-      <body>
-        <header>
-          <h1>Dropify</h1>
+      <body
+        style={{
+          margin: 0,
+          background: '#0f1117',
+          color: '#e6edf3',
+          fontFamily: 'Inter, system-ui, sans-serif',
+        }}
+      >
+        {/* Glass Neon Header */}
+        <header
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 50,
+            backdropFilter: 'blur(12px)',
+            background: 'rgba(15,17,23,0.6)',
+            borderBottom: '1px solid #1f2937',
+            padding: '18px 24px',
+          }}
+        >
+          <h1
+            style={{
+              margin: 0,
+              fontSize: '20px',
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+              color: '#7aa2f7',
+              textShadow: '0 0 15px rgba(122,162,247,0.5)',
+            }}
+          >
+            Dropify
+          </h1>
         </header>
 
-        <main>{children}</main>
+        {/* Main Content */}
+        <main
+          style={{
+            minHeight: 'calc(100vh - 120px)',
+          }}
+        >
+          {children}
+        </main>
 
-        <footer>
-          <p>© Dropify</p>
+        {/* Minimal Neon Footer */}
+        <footer
+          style={{
+            textAlign: 'center',
+            padding: '20px',
+            borderTop: '1px solid #1f2937',
+            background: 'rgba(15,17,23,0.6)',
+            backdropFilter: 'blur(8px)',
+            fontSize: '14px',
+            color: '#6b7280',
+          }}
+        >
+          © {new Date().getFullYear()} Dropify
         </footer>
 
+        {/* Service Worker */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

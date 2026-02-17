@@ -1,21 +1,20 @@
 import os
 import uuid
+import secrets
 from pathlib import Path
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from app.models.drop import Drop
 from app.models.session import Session as SessionModel
+from app.services.expiry_prediction_service import predict_expiry
 
 
-# Allowed safe extensions
 ALLOWED_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg"}
 
-# Explicitly forbidden extensions (extra safety)
 FORBIDDEN_EXTENSIONS = {
     "exe", "sh", "bat", "cmd", "msi", "js", "html", "php", "py"
 }
 
-# 5MB limit (reduced from 10MB for abuse prevention)
 MAX_FILE_SIZE = 5 * 1024 * 1024
 
 UPLOAD_DIR = Path("uploads")
@@ -28,7 +27,6 @@ def _validate_extension(filename: str) -> str:
     parts = filename.split(".")
     extension = parts[-1].lower()
 
-    # Block double extension tricks like file.pdf.exe
     if len(parts) > 2 and parts[-2].lower() in FORBIDDEN_EXTENSIONS:
         raise ValueError("Suspicious file name")
 
@@ -106,10 +104,18 @@ async def save_file(
 
     normalized_path = file_path.as_posix()
 
+    expiry = predict_expiry(None, normalized_path)
+
+    download_token = secrets.token_urlsafe(32)
+
     drop = Drop(
         session_code=session_code,
         content=None,
         file_path=normalized_path,
+        expires_at=expiry,
+        download_token=download_token,
+        is_downloaded=False,
+        is_deleted=False,
     )
 
     db.add(drop)
